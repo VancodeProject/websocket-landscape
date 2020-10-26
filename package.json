@@ -1,0 +1,20 @@
+{
+  "name": "vancode",
+  "version": "0.0.1",
+  "description": "Just like a sunflower, we are looking at the sun, asking for brightness and warmth.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "warmth",
+    "van",
+    "gogh"
+  ],
+  "author": "Thomas TEIXEIRA, Alexandre BORDES",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "websocket": "^1.0.32"
+  }
+}

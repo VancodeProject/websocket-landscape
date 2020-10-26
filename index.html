@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<h1>Test D'écriture en simultanée</h1>
+		<p><em>NB: Normalement, tout les pages de l'application seront gérées par le serveur Vue et non celui-ci, qui ne sera responsable que de la gestion utilisateurs (gestion BD et authentification ect...) et de la gestion websocket.</em></p>
+		<br>
+		<hr>
+		<br>
+		<input type='text' id='value' />
+		<button onclick="sendMessage()">SUBMIT</button>
+		<button onclick="disconnect()">DISCONNECT</button>
+
+		<h3>Tout le texte reçu et envoyé apparaît en dessous</h3>
+		<p id='receiver'></p>
+
+
+		<script>
+			const out = (text) => { document.getElementById('receiver').innerHTML += text }
+
+			alert("Attendre avant d'envoyer des messages")
+			const ws = new WebSocket('ws://127.0.0.1:3000', 'code-simu')
+			ws.onopen = () => {
+				alert("C'est bon !")
+			}
+
+			ws.onmessage = (evt) => {
+				out(evt.data)
+			}
+
+			function sendMessage() {
+				const msg = document.getElementById('value').value
+				out(msg)
+				ws.send(msg)
+			}
+
+			function disconnect() {
+				ws.close(1000, 'The client decide to disconnect from the server')
+			}
+		</script>
+	</body>
+</html>
