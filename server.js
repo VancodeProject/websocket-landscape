@@ -15,8 +15,9 @@ app.get('/', (req, res) => {
 
 app.get('/api', (req, res) => {
 	const test_valeur = {
-		username: 'AlexLeBG',
+		user: 'AlexLeBG',
 		password: 'JeSuisSecret',
+		token: 'hfjhHJDH6pA798uidsihiU768D7yd_kdkE'
 	}
 
 	res.send(JSON.stringify(test_valeur))
