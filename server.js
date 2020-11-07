@@ -24,6 +24,7 @@ const ws = new WebSocket({
 })
 
 const cs = []
+// Requete de connexion
 ws.on('request', (req) => {
 	var connection = req.accept('code-simu', req.origin)
 	console.log('New connection received')
