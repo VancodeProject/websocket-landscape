@@ -7,7 +7,7 @@ const app = express()
 
 app.all('/api', (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "X-Requested-With")
+  res.header("Access-Control-Allow-Headers", "*")
   next()
  })
 
@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
 	})
 })
 
-app.get('/api', (req, res) => {
+app.post('/api', (req, res) => {
 	res.send(JSON.stringify({
 		user: 'AlexLeBG',
 		password: 'JeSuisSecret',
