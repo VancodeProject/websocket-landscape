@@ -5,6 +5,12 @@ const DBWrapper = require('./src/js/database/MySQLWrapper.js')
 
 const app = express()
 
+app.all('/', (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Headers", "X-Requested-With")
+  next()
+ })
+
 app.get('/', (req, res) => {
 	fs.readFile("index.html", function(err, data){
 		res.writeHead(200, {'Content-Type': 'text/html'})
@@ -14,13 +20,11 @@ app.get('/', (req, res) => {
 })
 
 app.get('/api', (req, res) => {
-	const test_valeur = {
+	res.send(JSON.stringify({
 		user: 'AlexLeBG',
 		password: 'JeSuisSecret',
 		token: 'hfjhHJDH6pA798uidsihiU768D7yd_kdkE'
-	}
-
-	res.send(JSON.stringify(test_valeur))
+	}))
 })
 
 const port = process.env.PORT || 3000
