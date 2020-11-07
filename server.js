@@ -1,22 +1,32 @@
-const express = require('express');
+const express = require('express')
 const WebSocket = require('websocket').server
 const fs = require('fs')
+const DBWrapper = require('./src/js/database/MySQLWrapper.js')
 
-const app = express();
+const app = express()
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
 	fs.readFile("index.html", function(err, data){
-		res.writeHead(200, {'Content-Type': 'text/html'});
-		res.write(data);
-		res.end();
-	});
-});
+		res.writeHead(200, {'Content-Type': 'text/html'})
+		res.write(data)
+		res.end()
+	})
+})
 
-const port = process.env.PORT || 3000;
+app.get('/api', (req, res) => {
+	const test_valeur = {
+		username: 'AlexLeBG',
+		password: 'JeSuisSecret',
+	}
+
+	res.send(JSON.stringify(test_valeur))
+})
+
+const port = process.env.PORT || 3000
 
 const server = app.listen(port, '127.0.0.1', function () {
-  console.log('myapp listening on port ' + port);
-});
+  console.log('myapp listening on port ' + port)
+})
 
 const ws = new WebSocket({
 	httpServer: server,
