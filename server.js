@@ -2,25 +2,30 @@ const express = require('express')
 const WebSocket = require('websocket').server
 const fs = require('fs')
 const mysql = require('mysql')
-const md5 = require('md5')
+// On charge les variable environementales depuis le fichier .env
+require('dotenv').config();
+
+// Import de nos propres modules
+const auth = require('./src/js/auth/auth.js')
 
 const app = express()
-const connection = mysql.createConnection({
-	host: 'localhost',
-	user: 'thomas',
-	password: '10021316',
-	database: 'vancode'
+const db_connection = mysql.createConnection({
+	host: process.env.HOST,
+	user: process.env.USERNAME,
+	password: process.env.PASSWORD,
+	database: process.env.DATABASE
 })
 
-// Parse le JSON reçut sur les endpoints
+// Analyse le body reçut dans la requête et permet son utilisation
 app.use(express.json())
-
-app.all('/api', (req, res, next) => {
+// Middleware pour désactiver les CORS
+app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
   res.header("Access-Control-Allow-Headers", "*")
   next()
- })
+})
 
+// Routes
 app.get('/', (req, res) => {
 	fs.readFile("index.html", function(err, data){
 		res.writeHead(200, {'Content-Type': 'text/html'})
@@ -30,63 +35,25 @@ app.get('/', (req, res) => {
 })
 
 app.post('/api/login', (req, res) => {
-	const username = req.body.userName
-	const password = req.body.password
-
-	connection.query("SELECT * FROM users WHERE username = ? LIMIT 1", [username],
-		(error, results, fields) => {
-			try {
-				// On fait nos tests sur les potentielles erreurs
-				if (error) throw error
-				if (results.length === 0) throw new Error("No username match")
-				if (username === undefined || password === undefined) throw new Error("Data wasn't received")
-				
-				// Puisqu'on a précisé une limite, on n'est sûr de n'avoir
-				// qu'un seul résultat
-				const dbUser = results[0]
-
-				// On vérifie que les hashs des mdp correspondent
-				const hashPass = md5(password)
-
-				if (hashPass !== dbUser.password) throw new Error("Passwords don't match with database")
-
-				// Si on est arrivé ici, alors le compte correspond à celui de la bd
-				// On renvoie donc une requête 200 (OK) ainsi que le token de connexion
-				const responseData = JSON.stringify(
-					{
-						token: "fjjijjfkdju8YC8CHHCO_d_hcO98CI"
-					}
-				)
-
-				res.writeHead(200, {'Content-Type': 'application/json'})
-				res.write(responseData)
-
-			} catch(error) {
-				// On arrive ici si une erreur a été renvoyée (throw)
-				// On répond à la FE avec une liste
-				const errorData = JSON.stringify(
-					{
-						error: error
-					}
-				)
-
-				res.writeHead(400, {'Content-Type': 'application/json'})
-				res.write(errorData)
-
-			} finally {
-				// Quoiqu'il arrive on doit terminer la requête
-				res.end()
-			}
-		}
-	)
+	auth.login(req, res, db_connection)
 })
 
-const port = process.env.PORT || 3000
+app.post('/api/register', (req, res) => {
+	auth.register(req, res, db_connection)
+})
 
+app.post('/api/token', (req, res) => {
+	res.writeHead(401)
+	res.end()
+})
+
+// Lancement du serveur HTTP
+const port = 3000
 const server = app.listen(port, '127.0.0.1', function () {
   console.log('myapp listening on port ' + port)
 })
 
+// Lancement du serveur Websocket 
 const ws = new WebSocket({
 	httpServer: server,
 	autoAcceptConnections: false
