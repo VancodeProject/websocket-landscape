@@ -11,8 +11,8 @@ const auth = require('./src/js/auth/auth.js')
 const app = express()
 const db_connection = mysql.createConnection({
 	host: process.env.HOST,
-	user: process.env.USERNAME,
-	password: process.env.PASSWORD,
+	user: process.env.DB_USERNAME,
+	password: process.env.DB_PASSWORD,
 	database: process.env.DATABASE
 })
 

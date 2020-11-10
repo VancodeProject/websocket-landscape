@@ -9,9 +9,9 @@ module.exports = (req, res, db) => {
 		(error, results, fields) => {
 			try {
 				// On fait nos tests sur les potentielles erreurs
-				if (error) throw error
-				if (results.length === 0) throw new Error("No username match")
-				if (username === undefined || password === undefined) throw new Error("Data wasn't received")
+				if (error) throw new ErrorWithCode(error.message, ErrorCodes.DATABASE_ISSUE)
+				if (results.length === 0) throw new ErrorWithCode("There is no matching row in DB", ErrorCodes.NO_MATCHING_USERNAME)
+				if (username === undefined || password === undefined) throw new ErrorWithCode("There are missing credentials", ErrorCodes.CREDENTIALS_MISSING)
 				
 				// Puisqu'on a précisé une limite, on n'est sûr de n'avoir
 				// qu'un seul résultat
