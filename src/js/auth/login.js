@@ -1,3 +1,5 @@
+// TODO: Check non-empty password
+
 const md5 = require('md5')
 const { ErrorCodes, ErrorWithCode } = require('../error/error.js')
 
@@ -5,7 +7,7 @@ module.exports = (req, res, db) => {
 	const username = req.body.userName
 	const password = req.body.password
 
-	db.query("SELECT * FROM users WHERE username = ? LIMIT 1", [username],
+	db.query("SELECT * FROM users WHERE BINARY username = ? LIMIT 1", [username],
 		(error, results, fields) => {
 			try {
 				// On fait nos tests sur les potentielles erreurs
