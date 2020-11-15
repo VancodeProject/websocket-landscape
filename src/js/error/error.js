@@ -4,6 +4,7 @@ const ErrorCodes = {
 	CREDENTIALS_MISSING: 2,
 	PASSWORD_INCORRECT: 3,
 	INSERT_PROBLEM: 4,
+	DUPLICATE_DATABASE: 5,
 }
 
 class ErrorWithCode extends Error {
