@@ -2,9 +2,11 @@ const jwt = require('jsonwebtoken')
 
 module.exports = {
     jwtMiddleware: (req, res, next) => {
-        const auth = req.headers['Authorization']
-        const token = auth && auth.split(' ')[1]
+        const token = req.headers.authorization
 
+        if (!token)
+            return res.sendStatus(401)
+        
         jwt.verify(
             token,
             process.env.SECRET, 

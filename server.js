@@ -6,7 +6,8 @@ const mysql = require('mysql')
 require('dotenv').config();
 
 // Import de nos propres modules
-const auth = require('./src/js/auth/auth')
+const auth = require('./src/js/auth/auth');
+const { jwtMiddleware } = require('./src/js/token/token');
 
 const app = express()
 const db_connection = mysql.createConnection({
@@ -20,14 +21,18 @@ const db_connection = mysql.createConnection({
 app.use(express.json())
 // Middleware pour désactiver les CORS
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "*")
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', '*')
   next()
+})
+// Middleware pour parse le token sur les endpoints le nécessitant
+app.use('/api/user/', (req, res, next) => {
+	jwtMiddleware(req,res,next)
 })
 
 // Routes
 app.get('/', (req, res) => {
-	fs.readFile("index.html", function(err, data){
+	fs.readFile('index.html', function(err, data){
 		res.writeHead(200, {'Content-Type': 'text/html'})
 		res.write(data)
 		res.end()
@@ -42,8 +47,10 @@ app.post('/api/register', (req, res) => {
 	auth.register(req, res, db_connection)
 })
 
-app.post('/api/token', (req, res) => {
-	res.writeHead(401)
+app.get('/api/user/token_infos', (req, res) => {
+	const user = JSON.stringify(req.user)
+
+	res.write(user)
 	res.end()
 })
 
