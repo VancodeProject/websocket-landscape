@@ -27,6 +27,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', true)
   next()
 })
+app.options('/api/user/token_infos', (req, res) => res.end())
 // Middleware pour parse le token sur les endpoints le nécessitant
 app.use('/api/user/', (req, res, next) => {
 	jwtMiddleware(req,res,next)
