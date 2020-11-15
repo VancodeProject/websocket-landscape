@@ -21,8 +21,10 @@ const db_connection = mysql.createConnection({
 app.use(express.json())
 // Middleware pour désactiver les CORS
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Headers', '*')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', '*')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+  res.setHeader('Access-Control-Allow-Credentials', true)
   next()
 })
 // Middleware pour parse le token sur les endpoints le nécessitant
@@ -50,9 +52,16 @@ app.post('/api/register', (req, res) => {
 app.get('/api/user/token_infos', (req, res) => {
 	const user = JSON.stringify(req.user)
 
+	res.writeHead(200, {
+		'Content-Type': 'application/json'
+	})
 	res.write(user)
 	res.end()
 })
+
+app.patch('/api/user/account')
+
+app.delete('/api/user/account')
 
 // Lancement du serveur HTTP
 const port = 3000
