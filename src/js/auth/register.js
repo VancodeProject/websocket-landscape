@@ -28,7 +28,13 @@ module.exports = async (req, res, db) => {
 					return
 				}
 
-				sendError(res, new ErrorWithCode(error.sqlMessage, ErrorCodes.DUPLICATE_DATABASE))
+				const code = error.sqlMessage.search('email') == -1
+					? // Si search renvoie -1, ça veut dire que l'username est le doublon
+					ErrorCodes.USERNAME_DUPLICATE 
+					: // Sinon c'est l'email le doublon
+					ErrorCodes.EMAIL_DUPLICATE
+
+				sendError(res, new ErrorWithCode(error.sqlMessage, code))
 				return
 			}
 
