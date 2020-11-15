@@ -1,8 +1,8 @@
 // TODO: Check non-empty password
 const md5 = require('md5')
-const { ErrorCodes, ErrorWithCode } = require('../error/error')
+const { ErrorCodes, ErrorWithCode } = require('../error/error.js')
 const sendError = require('./utils')
-const { createJWT } = require('../tokeb/token')
+const { createJWT } = require('../token/token.js')
 
 module.exports = (req, res, db) => {
 	const username = req.body.userName

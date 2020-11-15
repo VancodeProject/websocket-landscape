@@ -1,7 +1,7 @@
 // TODO: regex email, password and check for empty strings
 const md5 = require('md5')
-const { ErrorCodes, ErrorWithCode } = require('../error/error')
-const { createJWT } = require('../token/token')
+const { ErrorCodes, ErrorWithCode } = require('../error/error.js')
+const { createJWT } = require('../token/token.js')
 const sendError = require('./utils')
 
 module.exports = async (req, res, db) => {
