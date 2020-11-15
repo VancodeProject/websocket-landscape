@@ -1,6 +1,7 @@
 // TODO: regex email, password and check for empty strings
 const md5 = require('md5')
-const { ErrorCodes, ErrorWithCode } = require('../error/error.js')
+const { ErrorCodes, ErrorWithCode } = require('../error/error')
+const { createJWT } = require('../token/token')
 const sendError = require('./utils')
 
 module.exports = async (req, res, db) => {
@@ -44,7 +45,10 @@ module.exports = async (req, res, db) => {
 			}
 
 			const data = JSON.stringify({
-				token: "alexandre_est_trop_beau"
+				token: createJWT({
+					username: username,
+					email: email,
+				})
 			})
 
 			res.writeHead(200, {'Content-Type': 'application/json'})

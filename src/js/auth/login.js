@@ -1,7 +1,8 @@
 // TODO: Check non-empty password
 const md5 = require('md5')
-const { ErrorCodes, ErrorWithCode } = require('../error/error.js')
+const { ErrorCodes, ErrorWithCode } = require('../error/error')
 const sendError = require('./utils')
+const { createJWT } = require('../tokeb/token')
 
 module.exports = (req, res, db) => {
 	const username = req.body.userName
@@ -47,7 +48,10 @@ module.exports = (req, res, db) => {
 			// On renvoie donc une requête 200 (OK) ainsi que le token de connexion
 			const responseData = JSON.stringify(
 				{
-					token: "fjjijjfkdju8YC8CHHCO_d_hcO98CI"
+					token: createJWT({
+						username: username,
+						email: dbUser.email,
+					})
 				}
 			)
 

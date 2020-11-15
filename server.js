@@ -6,7 +6,7 @@ const mysql = require('mysql')
 require('dotenv').config();
 
 // Import de nos propres modules
-const auth = require('./src/js/auth/auth.js')
+const auth = require('./src/js/auth/auth')
 
 const app = express()
 const db_connection = mysql.createConnection({
