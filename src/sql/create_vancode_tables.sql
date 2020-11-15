@@ -44,7 +44,7 @@ CREATE TABLE `rooms` (
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `username` varchar(32) DEFAULT NULL,
+  `username` varchar(32) DEFAULT NULL UNIQUE,
   `email` varchar(256) DEFAULT NULL UNIQUE,
   `password` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
