@@ -8,6 +8,7 @@ require('dotenv').config();
 // Import de nos propres modules
 const { auth, account } = require('./src/js/user/user');
 const jwt = require('./src/js/token/token');
+const rooms = require('./src/js/user/rooms/rooms');
 
 const app = express()
 const db_connection = mysql.createConnection({
@@ -67,6 +68,10 @@ app.patch('/api/user/account', (req, res) => {
 
 app.delete('/api/user/account', (req, res) => {
 	account.deleteAccount(req, res, db_connection)
+})
+
+app.get('/api/user/rooms', (req, res) => {
+	rooms.retrieve(req, res, db_connection)
 })
 
 // Lancement du serveur HTTP

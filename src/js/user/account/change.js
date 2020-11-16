@@ -1,7 +1,7 @@
 const { ErrorCodes, ErrorWithCode } = require('../../error/error')
 const sendError = require('../../utils')
 
-module.exports = (res, db, infos) => {
+module.exports = (db, infos) => {
     return new Promise((resolve, reject) => {
         const query = db.query(
             infos.query,
