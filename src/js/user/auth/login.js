@@ -1,7 +1,7 @@
 // TODO: Check non-empty password
 const md5 = require('md5')
 const { ErrorCodes, ErrorWithCode } = require('../../error/error')
-const sendError = require('./utils')
+const sendError = require('../../utils')
 const jwt = require('../../token/token')
 
 module.exports = (req, res, db) => {

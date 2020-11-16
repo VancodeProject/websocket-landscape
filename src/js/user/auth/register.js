@@ -2,7 +2,7 @@
 const md5 = require('md5')
 const { ErrorCodes, ErrorWithCode } = require('../../error/error')
 const jwt = require('../../token/token')
-const sendError = require('../utils')
+const sendError = require('../../utils')
 
 module.exports = async (req, res, db) => {
 	const username = req.body.userName
