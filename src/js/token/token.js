@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 
 module.exports = {
-    jwtMiddleware: (req, res, next) => {
+    middleware: (req, res, next) => {
         const token = req.headers.authorization
 
         if (!token)
@@ -20,7 +20,7 @@ module.exports = {
 
         next()
     },
-    createJWT: (infos) => {
+    create: (infos) => {
         return jwt.sign(infos, process.env.SECRET)
     }
 }

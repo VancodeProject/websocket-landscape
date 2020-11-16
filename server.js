@@ -6,8 +6,8 @@ const mysql = require('mysql')
 require('dotenv').config();
 
 // Import de nos propres modules
-const auth = require('./src/js/auth/auth');
-const { jwtMiddleware } = require('./src/js/token/token');
+const { auth, account } = require('./src/js/user/user');
+const jwt = require('./src/js/token/token');
 
 const app = express()
 const db_connection = mysql.createConnection({
@@ -27,10 +27,11 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', true)
   next()
 })
-app.options('/api/user/token_infos', (req, res) => res.end())
+// Endpoint pour les pré-requête lié aux CORS
+app.options('/api/*', (req, res) => res.end())
 // Middleware pour parse le token sur les endpoints le nécessitant
 app.use('/api/user/', (req, res, next) => {
-	jwtMiddleware(req,res,next)
+	jwt.middleware(req,res,next)
 })
 
 // Routes
@@ -60,9 +61,13 @@ app.get('/api/user/token_infos', (req, res) => {
 	res.end()
 })
 
-app.patch('/api/user/account')
+app.patch('/api/user/account', (req, res) => {
+	account.modifyAccount(req, res, db_connection)
+})
 
-app.delete('/api/user/account')
+app.delete('/api/user/account', (req, res) => {
+	account.deleteAccount(req, res, db_connection)
+})
 
 // Lancement du serveur HTTP
 const port = 3000

@@ -3,7 +3,9 @@ module.exports = (res, error) => {
     // On envoie l'erreur à la FE
     const errorData = JSON.stringify(error)
 
-    res.writeHead(400, {'Content-Type': 'application/json'})
+    res.writeHead(400, {
+        'Content-Type': 'application/json'
+    })
     res.write(errorData)
     res.end()
 }

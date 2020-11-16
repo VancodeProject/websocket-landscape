@@ -1,8 +1,8 @@
 // TODO: Check non-empty password
 const md5 = require('md5')
-const { ErrorCodes, ErrorWithCode } = require('../error/error')
+const { ErrorCodes, ErrorWithCode } = require('../../error/error')
 const sendError = require('./utils')
-const { createJWT } = require('../token/token')
+const jwt = require('../../token/token')
 
 module.exports = (req, res, db) => {
 	const username = req.body.userName
@@ -15,7 +15,8 @@ module.exports = (req, res, db) => {
 	SELECT *
 	FROM users
 	WHERE BINARY username = ?
-	LIMIT 1`
+	LIMIT 1
+	`
 
 	db.query(
 		sql_query,
@@ -42,14 +43,16 @@ module.exports = (req, res, db) => {
 			// On renvoie donc une requête 200 (OK) ainsi que le token de connexion
 			const responseData = JSON.stringify(
 				{
-					token: createJWT({
+					token: jwt.create({
 						username: username,
 						email: dbUser.email,
 					})
 				}
 			)
 
-			res.writeHead(200, {'Content-Type': 'application/json'})
+			res.writeHead(200, {
+				'Content-Type': 'application/json'
+			})
 			res.write(responseData)
 			res.end()
 		}
