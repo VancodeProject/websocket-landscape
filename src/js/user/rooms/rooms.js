@@ -7,10 +7,11 @@ module.exports = {
             const results = await new Promise((resolve, reject) => {
                 db.query(
                 `
-                SELECT r.*
-                FROM users u
+                SELECT r.*, l.name
+                FROM users AS u
                 INNER JOIN rooms r
-                ON r.master_id = u.id
+                INNER JOIN languages l
+                ON r.master_id = u.id AND r.language_id = l.id
                 WHERE u.username = ? AND u.email = ?
                 `,
                [
