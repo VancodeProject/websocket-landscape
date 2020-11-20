@@ -6,18 +6,18 @@ module.exports = (db, infos) => {
         const query = db.query(
             infos.query,
             infos.values,
-            (error) => {
-                let err
-                if (error) {
-                    if (error.errno !== 1062)
-                        err = new ErrorWithCode(error.sqlMessage, ErrorCodes.DATABASE_ISSUE)
-                    
-                    return reject(
-                        err
-                        ||
-                        new ErrorWithCode(error.sqlMessage, infos.errorCode)
-                    )
+            (error, okPacket) => {
+                if (error){
+                    const err = new ErrorWithCode(error.sqlMessage, error.errno)
+                    return reject(err)
                 }
+
+                // On ajoute ce if pour prevenir des mots de passe invalide
+                if (okPacket.affectedRows === 0)
+                    reject(
+                        new ErrorWithCode(error.error.sqlMessage, ErrorCodes.PASSWORD_INCORRECT)
+                    )
+                
                 resolve()
             }
         )

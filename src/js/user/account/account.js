@@ -4,6 +4,48 @@ const { ErrorWithCode, ErrorCodes } = require('../../error/error')
 const change = require('./change')
 const jwt = require('../../token/token')
 
+// Fonctions de changement non exportées
+const updateProfil = async (db, username, email, tokenUser) => {
+    await change(db, {
+        query: `
+        UPDATE users
+        SET username = ?, email = ?
+        WHERE username = ? AND email = ?`,
+        values: [
+            username,
+            email,
+            tokenUser.userName,
+            tokenUser.email
+        ],
+    }).catch((err) => {
+        if (err.code === 1062) {
+            if (err.msg.search('email') !== -1)
+                throw new ErrorWithCode(err.msg, ErrorCodes.EMAIL_DUPLICATE)
+
+            throw new ErrorWithCode(err.msg, ErrorCodes.USERNAME_DUPLICATE)
+        }
+
+        throw new ErrorWithCode(err.msg, ErrorCodes.DATABASE_ISSUE)
+    })
+}
+
+const passwordChange = async (db, password, npassword, nrpassword, tokenUser) => {
+    await change(db, {
+        query: `
+        UPDATE users
+        SET password = ?
+        WHERE password = ? AND username = ? AND email = ?`,
+        values: [
+            npassword,
+            password,
+            tokenUser.userName,
+            tokenUser.email
+        ],
+    }).catch((err) => {
+        throw new ErrorWithCode(err.msg, ErrorCodes.DATABASE_ISSUE)
+    })
+}
+
 module.exports = {
     modifyAccount: async (req, res, db) => {
         const username = req.body.userName
@@ -12,55 +54,13 @@ module.exports = {
         const npassword = req.body.newpassword && md5(req.body.newpassword)
         const nrpassword = req.body.newpasswordRepeat && md5(req.body.newpasswordRepeat)
 
-        console.log(req.user)
-        console.log(username)
-
         try {
-            if (username && username !== req.user.userName)
-                await change(db, {
-                    query: `
-                    UPDATE users
-                    SET username = ?
-                    WHERE username = ? AND email = ?`,
-                    values: [
-                        username,
-                        req.user.userName,
-                        req.user.email
-                    ],
-                    errorCode: ErrorCodes.USERNAME_DUPLICATE,
-                })
+            if (username && email)
+                await updateProfil(db, username, email, req.user)
 
-            if (email && email !== req.user.email)
-                await change(db, {
-                    query: `
-                    UPDATE users
-                    SET email = ?
-                    WHERE username = ? AND email = ?`,
-                    values: [
-                        email,
-                        req.user.userName,
-                        req.user.email
-                    ],
-                    errorCode: ErrorCodes.EMAIL_DUPLICATE,
-                })
+            if (password && npassword && nrpassword && password !== npassword)
+                await passwordChange(db, password, npassword, nrpassword, req.user)            
 
-            if (password && npassword && nrpassword)
-                if (nrpassword !== npassword)
-                    throw new ErrorWithCode("Password and repeat doesn't correspond", ErrorCodes.PASSWORD_REPEAT)
-                
-                if (password !== npassword)
-                    await change(db, {
-                        query: `
-                        UPDATE users
-                        SET password = ?
-                        WHERE password = ? AND username = ? AND email = ?`,
-                        values: [
-                            npassword,
-                            password,
-                            req.user.userName,
-                            req.user.email
-                        ],
-                    })
         } catch(error) {
             return sendError(res, error)
         }
@@ -71,6 +71,7 @@ module.exports = {
                 email: email
             })
         })
+
         res.writeHead(200, {
             'Content-Type':'application/json'
         })
@@ -78,6 +79,6 @@ module.exports = {
         res.end()
     },
     deleteAccount: (req, res, db) => {
-       const sql_query = `` 
+       const sql_query = ``
     }
 }

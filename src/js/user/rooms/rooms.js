@@ -8,7 +8,7 @@ module.exports = {
                 db.query(
                 `
                 SELECT r.*
-                FROM users AS u
+                FROM users u
                 INNER JOIN rooms r
                 ON r.master_id = u.id
                 WHERE u.username = ? AND u.email = ?
