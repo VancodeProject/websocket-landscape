@@ -39,7 +39,7 @@ module.exports = async (req, res, db) => {
 
 			const data = JSON.stringify({
 				token: jwt.create({
-					username: username,
+					userName: username,
 					email: email,
 				})
 			})

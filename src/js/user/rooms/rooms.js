@@ -13,7 +13,10 @@ module.exports = {
                 ON r.master_id = u.id
                 WHERE u.username = ? AND u.email = ?
                 `,
-               [req.user.usermame, req.user.email],
+               [
+                   req.user.userName,
+                   req.user.email
+                ],
                 (error, results) => {
                     if (error)
                         return reject(new ErrorWithCode(error.sqlMessage, ErrorCodes.DATABASE_ISSUE))
