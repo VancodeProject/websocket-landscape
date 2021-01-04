@@ -1,3 +1,4 @@
+// TODO: supprimer les sendErrors fonctions et utiliser le error endpoint
 const express = require('express')
 const WebSocket = require('websocket').server
 const fs = require('fs')
@@ -86,23 +87,110 @@ const ws = new WebSocket({
 	autoAcceptConnections: false
 })
 
-const cs = []
+const waiting = []
+const rooms = {}
+
 // Requete de connexion
 ws.on('request', (req) => {
 	var connection = req.accept('code-simu', req.origin)
-	console.log('New connection received')
-	cs.push(connection)
+	console.log('New connection received. Adding to waiting queue')
+	waiting.push(connection)
 
 	connection.on('message', (msg) => {
-		console.log(`Message received: ${msg.utf8Data}. Nombre d'utilisateurs connectés: ${cs.length}`)
-		cs.forEach( (el) => {
-			if (el !== connection) {
-				el.sendUTF(msg.utf8Data)
+		const infos = JSON.parse(msg.utf8Data)
+		const room = rooms[infos.slang]
+
+		console.log(`Nouveau message de la room ${infos.slang}.`)
+
+		if (waiting.indexOf(connection) !== -1) {
+			if (room) {
+				room.connections.push(connection)
+				connection.send(JSON.stringify({
+					type: "STR",
+					zones: room.zones,
+					users: room.users
+				}))
+			} else {
+				rooms[infos.slang] = [connection]
 			}
+
+			waiting.splice(waiting.indexOf(connection), 1)
+			return
+		}
+
+		// Si on est deja membre d'une salle
+		switch (infos.type) {
+			case "TXT":
+				room.zones.find((el) => el.id == infos.id).content = infos.content
+				break;
+
+			case "ACZ":
+				rooms.zones.push({
+					id: infos.zone.id,
+					title: infos.zone.title,
+					users: [],
+					content: [""],
+				})
+				break;
+
+			case "DCZ":
+				room.zones.splice(
+					room.lastIndexOf(
+						room.find((el) => el.id == infos.id)
+					)
+				, 1)
+				break;
+
+			case "UCZ":
+				room.zones[infos.index].title = infos.title;
+				break;
+
+			case "AUL":
+				room.zones.find((el) => el.id == infos.idCode).users.push(infos.idUser)
+				break;
+
+			case "DUL": {
+				const zone = room.zones.find((el) => el.id == infos.idCode)
+				zone.users.splice(
+					zone.users.lastIndexOf(infos.idUser)
+				, 1)
+				break;
+			}
+
+			case "RAZ":
+				room.zones = []
+				break;
+
+			case "ANU": {
+				const user = {
+					id: infos.user.id,
+					name: infos.user.name,
+					status: infos.user.status
+				}
+
+				if (infos.first)
+					room.users.unshift(user)
+				else
+					room.users.push(user)
+
+				break;
+			}
+		}
+		// On renvoie la requete a tous les utilisateurs de la salle
+		room.connections.forEach((other) => {
+			if (other !== connection)
+				other.send(msg)
 		})
 	})
+
 	connection.on('close', (reasonCode, description) => {
-		console.log(`Connection closed with the following code ${reasonCode}: ${description}`)
-		cs.splice(cs.indexOf(connection), 1)
+		console.log(`Un utilisateur s'est deconnecte avec le code ${reasonCode}: ${description}`)
+		Object.values(rooms).forEach((room) => {
+			const maybeSelf = room.connections.find((el) => el === connection)
+			if (maybeSelf) {
+				room.connections.splice(room.connections.lastIndexOf(connection), 1)
+				break
+			}
+		})
 	})
 })
