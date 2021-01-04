@@ -81,6 +81,10 @@ const server = app.listen(port, '127.0.0.1', function () {
   console.log('myapp listening on port ' + port)
 })
 
+// -----------------------------------------------
+// ------------------ WEBSOCKET ------------------
+// -----------------------------------------------
+
 // Lancement du serveur Websocket 
 const ws = new WebSocket({
 	httpServer: server,
@@ -118,7 +122,7 @@ ws.on('request', (req) => {
 			return
 		}
 
-		// Si on est deja membre d'une salle
+		// Si on est deja membre d'une salle alors on gere les differents event
 		switch (infos.type) {
 			case "TXT":
 				room.zones.find((el) => el.id == infos.id).content = infos.content
@@ -176,7 +180,8 @@ ws.on('request', (req) => {
 				break;
 			}
 		}
-		// On renvoie la requete a tous les utilisateurs de la salle
+
+		// On renvoie ensuite le message a tous les utilisateurs de la salle actuelle
 		room.connections.forEach((other) => {
 			if (other !== connection)
 				other.send(msg)
@@ -184,10 +189,10 @@ ws.on('request', (req) => {
 	})
 
 	connection.on('close', (reasonCode, description) => {
-		console.log(`Un utilisateur s'est deconnecte avec le code ${reasonCode}: ${description}`)
-		Object.values(rooms).forEach((room) => {
+		Object.entries(rooms).forEach(([slang, room]) => {
 			const maybeSelf = room.connections.find((el) => el === connection)
 			if (maybeSelf) {
+				console.log(`Un utilisateur s'est deconnecte de la salle ${slang} avec le code ${reasonCode}: ${description}`)
 				room.connections.splice(room.connections.lastIndexOf(connection), 1)
 				break
 			}
