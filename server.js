@@ -6,6 +6,8 @@ const mysql = require('mysql')
 // On charge les variable environementales depuis le fichier .env
 require('dotenv').config();
 
+const unique = require('unique-string')
+
 // Import de nos propres modules
 const { auth, account } = require('./src/js/user/user');
 const jwt = require('./src/js/token/token');
@@ -18,6 +20,9 @@ const db_connection = mysql.createConnection({
 	password: process.env.DB_PASSWORD,
 	database: process.env.DATABASE
 })
+
+const waiting = []
+const roomsObj = {}
 
 // Analyse le body reçut dans la requête et permet son utilisation
 app.use(express.json())
@@ -75,6 +80,15 @@ app.get('/api/user/rooms', (req, res) => {
 	rooms.retrieve(req, res, db_connection)
 })
 
+app.get('/api/room/slang', (req, res) => {
+	res.write(JSON.stringify({
+		title: req.title,
+		language: req.language,
+		slang: unique()
+	}))
+	res.end()
+})
+
 // Lancement du serveur HTTP
 const port = 3000
 const server = app.listen(port, '127.0.0.1', function () {
@@ -91,9 +105,7 @@ const ws = new WebSocket({
 	autoAcceptConnections: false
 })
 
-const waiting = []
-const rooms = {}
-
+const connectionUser = {}
 // Requete de connexion
 ws.on('request', (req) => {
 	var connection = req.accept('code-simu', req.origin)
@@ -102,9 +114,9 @@ ws.on('request', (req) => {
 
 	connection.on('message', (msg) => {
 		const infos = JSON.parse(msg.utf8Data)
-		const room = rooms[infos.slang]
+		const room = roomsObj[infos.slang]
 
-		console.log(`Nouveau message de la room ${infos.slang}.`)
+		//console.log(`Nouveau message de la room ${infos.slang}.`)
 
 		if (waiting.indexOf(connection) !== -1) {
 			if (room) {
@@ -116,7 +128,7 @@ ws.on('request', (req) => {
 				}))
 			} else {
 				// Obligé d'initialiser rooms[slang] puisque la variable room === undefined
-				rooms[infos.slang] = {
+				roomsObj[infos.slang] = {
 					connections: [connection],
 					zones: [],
 					users: [],
@@ -135,7 +147,7 @@ ws.on('request', (req) => {
 				break;
 
 			case "ACZ":
-				rooms.zones.push({
+				room.zones.push({
 					id: infos.zone.id,
 					title: infos.zone.title,
 					users: [],
@@ -172,6 +184,9 @@ ws.on('request', (req) => {
 				break;
 
 			case "ANU": {
+				if (! connectionUser[connection])
+					connectionUser[connection] = infos.user.id
+
 				const user = {
 					id: infos.user.id,
 					name: infos.user.name,
@@ -190,17 +205,31 @@ ws.on('request', (req) => {
 		// On renvoie ensuite le message a tous les utilisateurs de la salle actuelle
 		room.connections.forEach((other) => {
 			if (other !== connection)
-				other.send(msg)
+				other.send(msg.utf8Data)
 		})
 	})
 
 	connection.on('close', (reasonCode, description) => {
-		Object.entries(rooms).forEach(([slang, room]) => {
+		// TODO: Connexion terminer pour cet user, envoye un message ws a tous le monde
+		Object.entries(roomsObj).forEach(([slang, room]) => {
 			const maybeSelf = room.connections.find((el) => el === connection)
 			if (maybeSelf) {
+				const index = room.connections.lastIndexOf(connection)
 				console.log(`Un utilisateur s'est deconnecte de la salle ${slang} avec le code ${reasonCode}: ${description}`)
-				room.connections.splice(room.connections.lastIndexOf(connection), 1)
-				break
+				room.connections.splice(index, 1)
+
+				room.users.splice(
+					room.users.lastIndexOf(
+						room.users.find((user) => user.id === connectionUser[connection])
+					)
+				, 1)
+
+				room.connections.forEach((con) => {
+					con.send(JSON.stringify({
+						type: "DEC",
+						deleteId: connectionUser[connection]
+					}))
+				})
 			}
 		})
 	})
