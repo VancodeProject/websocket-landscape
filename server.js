@@ -115,7 +115,9 @@ ws.on('request', (req) => {
 					users: room.users
 				}))
 			} else {
-				rooms[infos.slang] = [connection]
+				// Obligé d'utiliser rooms[slang] puisque la variable room === undefined
+				rooms[infos.slang].connections = [connection]
+				// TODO: Gérer la création/reprise de la salle avec la BD
 			}
 
 			waiting.splice(waiting.indexOf(connection), 1)
