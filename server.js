@@ -115,8 +115,12 @@ ws.on('request', (req) => {
 					users: room.users
 				}))
 			} else {
-				// Obligé d'utiliser rooms[slang] puisque la variable room === undefined
-				rooms[infos.slang].connections = [connection]
+				// Obligé d'initialiser rooms[slang] puisque la variable room === undefined
+				rooms[infos.slang] = {
+					connections: [connection],
+					zones: [],
+					users: [],
+				}
 				// TODO: Gérer la création/reprise de la salle avec la BD
 			}
 
